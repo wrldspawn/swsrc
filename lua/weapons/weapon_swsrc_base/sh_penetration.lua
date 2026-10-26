@@ -246,7 +246,7 @@ function SWEP:CS_FireBullet(vecSrc, shootAngles, flDistance, iPenetration, iBull
 					local data = EffectData()
 					data:SetOrigin(waterTrace.HitPos)
 					data:SetNormal(waterTrace.HitNormal)
-					data:SetScale(util.SharedRandom("", 8, 12))
+					data:SetScale(util.SharedRandom("SWSrc:FireBullets WaterSplash", 8, 12))
 
 					if bit.band(waterTrace.Contents, CONTENTS_SLIME) ~= 0 then
 						data:SetFlags(1) -- FX_WATER_IN_SLIME

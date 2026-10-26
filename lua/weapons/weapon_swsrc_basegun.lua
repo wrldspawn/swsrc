@@ -186,8 +186,8 @@ function SWEP:FX_FireBullets(iMode, flCurAttack, fInaccuracy, fSpread)
 
 	owner:LagCompensation(true)
 
-	local fTheta0 = util.SharedRandom("", 0, 2 * math.pi)
-	local fRadius0 = util.SharedRandom("", 0, fInaccuracy)
+	local fTheta0 = util.SharedRandom("SWSrc:FireBullets SpreadDir", 0, 2 * math.pi)
+	local fRadius0 = util.SharedRandom("SWSrc:FireBullets Spread", 0, fInaccuracy)
 	local x0 = fRadius0 * math.cos(fTheta0)
 	local y0 = fRadius0 * math.sin(fTheta0)
 
@@ -198,8 +198,8 @@ function SWEP:FX_FireBullets(iMode, flCurAttack, fInaccuracy, fSpread)
 
 	-- the RNG can be desynchronized by FireBullet(), so pre-generate all spread offsets
 	for iBullet = 1, iBullets do
-		local fTheta1 = util.SharedRandom("", 0, 2 * math.pi, iBullet)
-		local fRadius1 = util.SharedRandom("", 0, fSpread, iBullet)
+		local fTheta1 = util.SharedRandom("SWSrc:FireBullets PelletDir", 0, 2 * math.pi, iBullet)
+		local fRadius1 = util.SharedRandom("SWSrc:FireBullets SpreadPellet", 0, fSpread, iBullet)
 		x1[iBullet] = fRadius1 * math.cos(fTheta1)
 		y1[iBullet] = fRadius1 * math.sin(fTheta1)
 	end

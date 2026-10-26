@@ -236,8 +236,6 @@ function SWEP:Reload(act)
 	local owner = selfTable.GetPlayerOwner(self)
 	if not owner then return false end
 
-    print("reload", self:GetReloadFinishTime(), self:Clip1(), self:GetMaxClip1())
-
 	selfTable.SetShotsFired(self, 0)
 
 	local ok, duration = selfTable.SetWeaponAnim(self, act or ACT_VM_RELOAD)
@@ -354,6 +352,7 @@ function SWEP:Think()
 		selfTable.SetInReload(self, false)
 	end
 
+		selfTable.SetReloadFinishTime(self, 0)
 	selfTable.m_bProcessActivities = true
 end
 

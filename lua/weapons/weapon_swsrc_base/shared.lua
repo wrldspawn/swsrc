@@ -350,9 +350,9 @@ function SWEP:Think()
 		owner:RemoveAmmo(j, self:GetPrimaryAmmoType())
 
 		selfTable.SetInReload(self, false)
+		selfTable.SetReloadFinishTime(self, 0)
 	end
 
-		selfTable.SetReloadFinishTime(self, 0)
 	selfTable.m_bProcessActivities = true
 end
 

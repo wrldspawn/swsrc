@@ -235,7 +235,7 @@ function SWEP:PrimaryAttack()
 		selfTable.SetWeaponMode(self, Primary_Mode)
 	end
 
-	owner:ViewPunch(Angle(-2, 0, 0))
+	selfTable.SetViewPunchPitch(self, selfTable.GetViewPunchPitch(self) - 2)
 end
 
 function SWEP:GetMaxSpeed()

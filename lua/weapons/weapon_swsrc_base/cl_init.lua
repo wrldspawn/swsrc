@@ -280,7 +280,7 @@ do -- crosshair
 		local spreadShow = weapon_debug_spread_show:GetInt()
 		if spreadShow == 1 or spreadShow == 2 then
 			if spreadShow == 2 then
-				local punchAngles = owner:GetViewPunchAngles()
+				local punchAngles = selfTable.GetViewPunchAngle(self)
 				local vecDirShooting = Vector()
 				swsrc.AngleVectors(punchAngles, vecDirShooting)
 
@@ -528,5 +528,17 @@ do -- weapon selection
 	function SWEP:DrawWeaponSelection(x, y, w, h, a)
 		self.SelectionColor.a = a
 		self:RenderTextureData("weapon_s", x, y, w, h, self.SelectionColor, true, true)
+	end
+end
+
+do -- CalcView
+	function SWEP:CalcView(ply, pos, ang, fov)
+		ang:Add(self:GetViewPunchAngle())
+		return pos, ang, fov
+	end
+
+	function SWEP:CalcViewModelView(vm, oldPos, oldAng, pos, ang)
+		ang:Add(self:GetViewPunchAngle())
+		return pos, ang
 	end
 end

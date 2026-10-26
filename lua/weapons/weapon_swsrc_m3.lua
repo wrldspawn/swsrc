@@ -223,7 +223,7 @@ function SWEP:PrimaryAttack()
 		x = math.floor(util.SharedRandom("M3PunchAngleGround", 4, 6))
 	end
 
-	owner:ViewPunch(Angle(-x, 0, 0))
+	selfTable.SetViewPunchPitch(self, selfTable.GetViewPunchPitch(self) - x)
 end
 
 function SWEP:Reload()

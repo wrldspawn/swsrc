@@ -120,7 +120,7 @@ function SWEP:FX_FireBullets(iMode, flCurAttack, fInaccuracy, fSpread)
 	local bDoEffects = true
 
 	local vOrigin = owner.m_vSavedShootPos or owner:GetShootPos()
-	local vAngles = owner:GetAimVector():Angle() + (2 * owner:GetViewPunchAngles())
+	local vAngles = owner:GetAimVector():Angle() + (2 * self:GetViewPunchAngle())
 	vAngles:Normalize()
 	local iWeaponID = selfTable.GetWeaponID(self)
 	if fInaccuracy == nil then

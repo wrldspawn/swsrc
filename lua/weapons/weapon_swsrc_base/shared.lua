@@ -140,10 +140,25 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Float", 1, "WeaponIdleTime")
 	self:NetworkVar("Float", 2, "AccuracyPenalty")
 
+	self:NetworkVar("Float", 3, "ViewPunchPitch")
+	self:NetworkVar("Float", 4, "ViewPunchYaw")
+	self:NetworkVar("Float", 5, "ViewPunchRoll")
+
 	self:SetDelayFire(true)
 	self:SetAccuracyPenalty(0)
 	self:SetWeaponMode(Primary_Mode)
 	self:SetKickDirection(0)
+end
+
+function SWEP:GetViewPunchAngle()
+	return Angle(self:GetViewPunchPitch(), self:GetViewPunchYaw(), self:GetViewPunchRoll())
+end
+
+function SWEP:SetViewPunchAngle(angle)
+	local p, y, r = angle:Unpack()
+	self:SetViewPunchPitch(p)
+	self:SetViewPunchYaw(y)
+	self:SetViewPunchRoll(r)
 end
 
 function SWEP:GetPlayerOwner()
@@ -311,6 +326,7 @@ function SWEP:Think()
 	if not owner then return end
 
 	selfTable.UpdateAccuracyPenalty(self, selfTable)
+	selfTable.DecayPunchAngle(self, selfTable)
 
 	if selfTable.GetInReload(self) and self:GetNextPrimaryFire() <= CurTime() then
 		local clip1 = self:Clip1()
@@ -560,7 +576,7 @@ function SWEP:KickBack(up_base, lateral_base, up_modifier, lateral_modifier, up_
 		flKickLateral = lateral_base + m_iShotsFired * lateral_modifier
 	end
 
-	local angle = owner:GetViewPunchAngles()
+	local angle = self:GetViewPunchAngle()
 	angle.x = angle.x - flKickUp
 	if angle.x < -up_max then
 		angle.x = -up_max
@@ -582,7 +598,65 @@ function SWEP:KickBack(up_base, lateral_base, up_modifier, lateral_modifier, up_
 		selfTable.SetKickDirection(self, 1 - selfTable.GetKickDirection(self))
 	end
 
-	owner:SetViewPunchAngles(angle)
+	self:SetViewPunchAngle(angle)
+end
+
+hook.Add("OnPlayerJump", "swsrc", function(ply, speed)
+	local wep = ply:GetActiveWeapon()
+	if not wep:IsValid() then return end
+
+	local wepTable = wep:GetTable()
+	if not wepTable.IsSWSrcWeapon then return end
+
+	if wepTable.OnJump then
+		wepTable.OnJump(wep, ply, speed, wepTable)
+	end
+end)
+
+hook.Add("OnPlayerHitGround", "swsrc", function(ply, water, floater, speed)
+	local wep = ply:GetActiveWeapon()
+	if not wep:IsValid() then return end
+
+	local wepTable = wep:GetTable()
+	if not wepTable.IsSWSrcWeapon then return end
+
+	if wepTable.OnLand then
+		wepTable.OnLand(wep, ply, speed, wepTable)
+	end
+end)
+
+function SWEP:OnJump(owner, impulse, selfTable)
+	local selfTable = self:GetTable() or selfTable
+	local wdat = selfTable.CSWpnData
+
+	local mode = selfTable.GetWeaponMode(self)
+	selfTable.SetAccuracyPenalty(self, selfTable.GetAccuracyPenalty(self) + (wdat.m_fInaccuracyJump[mode] * (impulse / owner:GetJumpPower())))
+end
+
+function SWEP:OnLand(owner, speed, selfTable)
+	local selfTable = self:GetTable() or selfTable
+	local wdat = selfTable.CSWpnData
+
+	local mode = selfTable.GetWeaponMode(self)
+	selfTable.SetAccuracyPenalty(self, selfTable.GetAccuracyPenalty(self) + (wdat.m_fInaccuracyLand[mode] * (speed / owner:GetJumpPower())))
+end
+
+function SWEP:DecayPunchAngle(tbl)
+	tbl = tbl or self:GetTable()
+	local ang = tbl.GetViewPunchAngle(self)
+	local p,y,r = ang:Unpack()
+	local dir = Vector(p,y,r)
+
+	local length = dir:Length()
+	if length <= 0 then return end
+
+	dir:Normalize()
+	p,y,r = dir:Unpack()
+
+	local decayed = math.max(0, length - FrameTime() * ((0.5 * length) + 10))
+	tbl.SetViewPunchPitch(self, p * decayed)
+	tbl.SetViewPunchYaw(self, y * decayed)
+	tbl.SetViewPunchRoll(self, r * decayed)
 end
 
 function SWEP:PrimaryAttack()

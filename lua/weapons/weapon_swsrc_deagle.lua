@@ -234,7 +234,7 @@ function SWEP:PrimaryAttack()
 	selfTable.SetAccuracyPenalty(self,
 		selfTable.GetAccuracyPenalty(self) + selfTable.CSWpnData.m_fInaccuracyFire[Primary_Mode])
 
-	owner:ViewPunch(Angle(-2, 0, 0))
+	selfTable.SetViewPunchPitch(self, selfTable.GetViewPunchPitch(self) - 2)
 end
 
 function SWEP:Reload()

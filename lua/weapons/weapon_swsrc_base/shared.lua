@@ -139,10 +139,11 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Float", 0, "DecreaseShotsFired")
 	self:NetworkVar("Float", 1, "WeaponIdleTime")
 	self:NetworkVar("Float", 2, "AccuracyPenalty")
+	self:NetworkVar("Float", 3, "ReloadFinishTime")
 
-	self:NetworkVar("Float", 3, "ViewPunchPitch")
-	self:NetworkVar("Float", 4, "ViewPunchYaw")
-	self:NetworkVar("Float", 5, "ViewPunchRoll")
+	self:NetworkVar("Float", 4, "ViewPunchPitch")
+	self:NetworkVar("Float", 5, "ViewPunchYaw")
+	self:NetworkVar("Float", 6, "ViewPunchRoll")
 
 	self:SetDelayFire(true)
 	self:SetAccuracyPenalty(0)
@@ -214,23 +215,38 @@ function SWEP:SetWeaponAnim(idealAct, flPlaybackRate)
 	end
 
 	-- Set the next time the weapon will idle
-	self:SetWeaponIdleTime(CurTime() + (vm:SequenceDuration(idealSequence) * (1 / flPlaybackRate)))
-	return true
+	local playTime = vm:SequenceDuration(idealSequence) * (1 / flPlaybackRate)
+	self:SetWeaponIdleTime(CurTime() + playTime)
+	return true, playTime
 end
 
 
 function SWEP:WeaponIdle(_)
 end
 
-function SWEP:Reload()
+function SWEP:Reload(act)
 	local selfTable = self:GetTable()
 
+	if selfTable.GetInReload(self) then return false end
+
+	local curtime = CurTime()
+    if self:GetNextPrimaryFire() > curtime then return false end
+	if self:Clip1() >= self:GetMaxClip1() then return false end
+
 	local owner = selfTable.GetPlayerOwner(self)
-	if not owner then return end
+	if not owner then return false end
+
+    print("reload", self:GetReloadFinishTime(), self:Clip1(), self:GetMaxClip1())
 
 	selfTable.SetShotsFired(self, 0)
 
-	self:DefaultReload(ACT_VM_RELOAD)
+	local ok, duration = selfTable.SetWeaponAnim(self, act or ACT_VM_RELOAD)
+	if not ok then return false end
+
+	selfTable.SetInReload(self, true)
+	selfTable.SetReloadFinishTime(self, curtime + duration)
+	self:SetNextPrimaryFire(curtime + duration)
+	self:SetNextSecondaryFire(curtime + duration)
 end
 
 function SWEP:IsUseable()
@@ -270,10 +286,10 @@ function SWEP:Think_ProcessSecondaryAttack(tbl)
 	return true
 end
 
-function SWEP:Think_ProcessReloadAction(_)
+function SWEP:Think_ProcessReloadAction(selfTable)
 	-- gameevent?
 
-	self:Reload()
+	selfTable.Reload(self)
 end
 
 local weapon_accuracy_model = GetConVar("swsrc_weapon_accuracy_model")
@@ -311,7 +327,7 @@ function SWEP:Think_ProcessIdleNoAction(selfTable)
 			and bit.band(selfTable.GetWeaponFlags(self, selfTable), ITEM_FLAG_NOAUTORELOAD) == 0
 			and self:GetNextPrimaryFire() < CurTime()
 		then
-			self:Reload()
+			selfTable.Reload(self)
 			return
 		end
 	end
@@ -328,7 +344,7 @@ function SWEP:Think()
 	selfTable.UpdateAccuracyPenalty(self, selfTable)
 	selfTable.DecayPunchAngle(self, selfTable)
 
-	if selfTable.GetInReload(self) and self:GetNextPrimaryFire() <= CurTime() then
+	if selfTable.GetInReload(self) and selfTable.GetReloadFinishTime(self) <= CurTime() then
 		local clip1 = self:Clip1()
 		local j = math.min(self:GetMaxClip1() - clip1, self:Ammo1())
 
@@ -385,11 +401,11 @@ function SWEP:ProcessActivities(tbl)
 
 	local bInReload = selfTable.GetInReload(self)
 
-	if bit.band(btns, IN_ATTACK2) ~= 0 and self:GetNextSecondaryFire() <= CurTime() then
+	if bit.band(btns, IN_ATTACK2) ~= 0 and self:GetNextSecondaryFire() <= CurTime() and not bInReload then
 		if selfTable.Think_ProcessSecondaryAttack(self, selfTable) then
 			btns = bit.band(btns, bit.bnot(IN_ATTACK2))
 		end
-	elseif bit.band(btns, IN_ATTACK) ~= 0 and self:GetNextPrimaryFire() <= CurTime() then
+	elseif bit.band(btns, IN_ATTACK) ~= 0 and self:GetNextPrimaryFire() <= CurTime() and not bInReload then
 		selfTable.Think_ProcessPrimaryAttack(self, selfTable)
 	elseif
 		bit.band(btns, IN_RELOAD) ~= 0
@@ -490,6 +506,8 @@ function SWEP:Deploy()
 	if math.floor(owner:GetFOV()) ~= owner:GetDefaultFOV() then
 		owner:SetFOV(0, 0.01)
 	end
+
+	owner:SetSaveValue("m_flNextAttack", SERVER and 0 or CurTime())
 
 	selfTable.SetAccuracyPenalty(self, 0)
 

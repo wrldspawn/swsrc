@@ -231,7 +231,7 @@ function SWEP:Reload(act)
 
 	owner:SetFOV(0, 0)
 
-	local iResult = self:DefaultReload(act or ACT_VM_RELOAD)
+	local iResult = BaseClass.Reload(self, act)
 	if not iResult then return false end
 
 	owner:SetAnimation(PLAYER_RELOAD)

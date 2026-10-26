@@ -287,7 +287,7 @@ do -- crosshair
 				local iOffsetX = math.floor(ScreenScaleH(vecDirShooting.y * 320 / math.tan(fHalfFov)))
 				local iOffsetY = math.floor(ScreenScaleH(vecDirShooting.z * 320 / math.tan(fHalfFov)))
 
-				x = y - iOffsetX
+				x = x - iOffsetX
 				y = y - iOffsetY
 			end
 

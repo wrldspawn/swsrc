@@ -147,7 +147,7 @@ function SWEP:GetInaccuracy()
 		local owner = selfTable.GetPlayerOwner(self)
 		if not owner then return 0 end
 
-		if owner:IsOnGround() then
+		if not owner:IsOnGround() then
 			return 0.04 + 0.4 * selfTable.GetAccuracy(self)
 		elseif owner:GetVelocity():Length2D() > 140 then
 			return 0.04 + 0.07 * selfTable.GetAccuracy(self)
@@ -169,7 +169,7 @@ function SWEP:PrimaryAttack()
 
 	if owner:GetVelocity():Length2D() > 5 then
 		selfTable.KickBack(self, 1.5, 0.45, 0.225, 0.05, 6.5, 2.5, 7)
-	elseif owner:IsOnGround() then
+	elseif not owner:IsOnGround() then
 		selfTable.KickBack(self, 2, 1.0, 0.5, 0.35, 9, 6, 5)
 	elseif owner:IsDucking() then
 		selfTable.KickBack(self, 0.9, 0.35, 0.15, 0.025, 5.5, 1.5, 9)

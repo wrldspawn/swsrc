@@ -187,7 +187,7 @@ function SWEP:GetInaccuracy()
 		local fSpread = 0
 
 		local vel = owner:GetVelocity():Length2D()
-		if owner:IsOnGround() then
+		if not owner:IsOnGround() then
 			fSpread = 0.85
 		elseif vel > 140 then
 			fSpread = 0.25

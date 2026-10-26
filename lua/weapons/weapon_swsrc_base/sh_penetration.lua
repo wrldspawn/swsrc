@@ -250,6 +250,8 @@ function SWEP:CS_FireBullet(vecSrc, shootAngles, flDistance, iPenetration, iBull
 
 					if bit.band(waterTrace.Contents, CONTENTS_SLIME) ~= 0 then
 						data:SetFlags(1) -- FX_WATER_IN_SLIME
+					else
+						data:SetFlags(0)
 					end
 
 					util.Effect("gunshotsplash", data, not game.SinglePlayer())

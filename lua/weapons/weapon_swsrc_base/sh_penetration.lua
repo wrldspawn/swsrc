@@ -235,7 +235,7 @@ function SWEP:CS_FireBullet(vecSrc, shootAngles, flDistance, iPenetration, iBull
 
 		local iDamageType = bit.bor(DMG_BULLET, DMG_NEVERGIB)
 
-		if bDoEffects then
+		if bDoEffects and IsFirstTimePredicted() then
 			-- See if the bullet ended up underwater + started out of the water
 			if bit.band(util.PointContents(tr.HitPos), bit.bor(CONTENTS_WATER, CONTENTS_SLIME)) ~= 0 then
 				waterTraceData.start:Set(vecSrc)
@@ -254,7 +254,7 @@ function SWEP:CS_FireBullet(vecSrc, shootAngles, flDistance, iPenetration, iBull
 						data:SetFlags(0)
 					end
 
-					util.Effect("gunshotsplash", data, not game.SinglePlayer())
+					util.Effect("gunshotsplash", data, true, not game.SinglePlayer())
 				end
 			else
 				-- Do Regular hit effects
@@ -273,10 +273,7 @@ function SWEP:CS_FireBullet(vecSrc, shootAngles, flDistance, iPenetration, iBull
 						data:SetHitBox(tr.HitBox)
 						data:SetEntity(ent)
 
-						if
-							(CLIENT and IsFirstTimePredicted())
-							and (ent:IsWorld() or (ent:IsValid() and not (ent:IsPlayer() or ent:IsNPC() or ent:IsNextBot())))
-						then
+						if CLIENT and (ent:IsWorld() or (ent:IsValid() and not (ent:IsPlayer() or ent:IsNPC() or ent:IsNextBot()))) then
 							local normal = Vector(tr.Normal)
 
 							if tr.HitNormal.z == 0 then
@@ -297,7 +294,7 @@ function SWEP:CS_FireBullet(vecSrc, shootAngles, flDistance, iPenetration, iBull
 							util.DecalEx(MAT_IMPACT, ent, tr.HitPos, decalNormal, color_white, 1, 1)
 						end
 
-						util.Effect("Impact_GMOD", data, not game.SinglePlayer())
+						util.Effect("Impact_GMOD", data, true, not game.SinglePlayer())
 					end
 				end
 			end
@@ -377,7 +374,7 @@ function SWEP:CS_FireBullet(vecSrc, shootAngles, flDistance, iPenetration, iBull
 		-- penetration was successful
 
 		-- bullet did penetrate object, exit Decal
-		if bDoEffects then
+		if bDoEffects and IsFirstTimePredicted() then
 			-- UTIL_ImpactTrace
 			if bit.band(exitTr.SurfaceFlags, bit.bor(SURF_SKY, SURF_NODRAW)) == 0 and exitTr.Fraction ~= 1 then
 				local ent = exitTr.Entity
@@ -390,10 +387,7 @@ function SWEP:CS_FireBullet(vecSrc, shootAngles, flDistance, iPenetration, iBull
 				data:SetHitBox(exitTr.HitBox)
 				data:SetEntity(ent)
 
-				if
-					(CLIENT and IsFirstTimePredicted())
-					and (ent:IsWorld() or (ent:IsValid() and not (ent:IsPlayer() or ent:IsNPC() or ent:IsNextBot())))
-				then
+				if CLIENT and (ent:IsWorld() or (ent:IsValid() and not (ent:IsPlayer() or ent:IsNPC() or ent:IsNextBot()))) then
 					local normal = Vector(exitTr.Normal)
 
 					if exitTr.HitNormal.z == 0 then
@@ -414,7 +408,7 @@ function SWEP:CS_FireBullet(vecSrc, shootAngles, flDistance, iPenetration, iBull
 					util.DecalEx(MAT_IMPACT, ent, exitTr.HitPos, decalNormal, color_white, 1, 1)
 				end
 
-				util.Effect("Impact_GMOD", data, not game.SinglePlayer())
+				util.Effect("Impact_GMOD", data, true, not game.SinglePlayer())
 			end
 		end
 

@@ -180,7 +180,7 @@ function SWEP:FX_FireBullets(iMode, flCurAttack, fInaccuracy, fSpread)
 		end
 	end
 
-	if bDoEffects then
+	if bDoEffects and IsFirstTimePredicted() then
 		EmitSound(pWeaponInfo.aShootSounds[sound_type + 1], vOrigin, owner:EntIndex(), CHAN_WEAPON)
 	end
 

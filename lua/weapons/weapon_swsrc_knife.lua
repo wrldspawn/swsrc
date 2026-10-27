@@ -247,48 +247,47 @@ function SWEP:Smack()
 		self:EmitSound("Weapon_Knife.HitWall")
 	end
 
-	local data = EffectData()
-	data:SetOrigin(tr.HitPos)
-	data:SetStart(tr.StartPos)
-	data:SetSurfaceProp(tr.SurfaceProps)
-	data:SetDamageType(DMG_SLASH)
-	data:SetHitBox(tr.HitBox)
-	data:SetEntity(ent)
-	data:SetAngles(owner:GetAngles())
-	data:SetFlags(1) -- IMPACT_NODECAL
+	if IsFirstTimePredicted() then
+		local data = EffectData()
+		data:SetOrigin(tr.HitPos)
+		data:SetStart(tr.StartPos)
+		data:SetSurfaceProp(tr.SurfaceProps)
+		data:SetDamageType(DMG_SLASH)
+		data:SetHitBox(tr.HitBox)
+		data:SetEntity(ent)
+		data:SetAngles(owner:GetAngles())
+		data:SetFlags(1) -- IMPACT_NODECAL
 
-	---@type boolean | CRecipientFilter
-	local filter = true
-	if SERVER then
-		filter = RecipientFilter()
-		filter:AddPAS(tr.HitPos)
-		filter:RemovePlayer(owner)
-	end
-
-	if
-		(CLIENT and IsFirstTimePredicted())
-		and (ent:IsWorld() or (ent:IsValid() and not (ent:IsPlayer() or ent:IsNPC() or ent:IsNextBot())))
-	then
-		local normal = Vector(tr.Normal)
-
-		if tr.HitNormal.z == 0 then
-			normal.z = 0
-			normal:Normalize()
+		---@type boolean | CRecipientFilter
+		local filter = true
+		if SERVER then
+			filter = RecipientFilter()
+			filter:AddPAS(tr.HitPos)
+			filter:RemovePlayer(owner)
 		end
 
-		local planeRight = normal:Cross(-vector_up)
-		local planeForward = planeRight:Cross(vector_up)
+		if CLIENT and (ent:IsWorld() or (ent:IsValid() and not (ent:IsPlayer() or ent:IsNPC() or ent:IsNextBot()))) then
+			local normal = Vector(tr.Normal)
 
-		local decalAngle = planeForward:AngleEx(vector_up)
-		local decalNormal = decalAngle:Forward()
+			if tr.HitNormal.z == 0 then
+				normal.z = 0
+				normal:Normalize()
+			end
 
-		if tr.HitNormal.z ~= 0 then
-			decalNormal:Set(planeRight)
+			local planeRight = normal:Cross(-vector_up)
+			local planeForward = planeRight:Cross(vector_up)
+
+			local decalAngle = planeForward:AngleEx(vector_up)
+			local decalNormal = decalAngle:Forward()
+
+			if tr.HitNormal.z ~= 0 then
+				decalNormal:Set(planeRight)
+			end
+
+			util.DecalEx(MAT_SLASH, ent, tr.HitPos, decalNormal, color_white, 1, 1)
 		end
-
-		util.DecalEx(MAT_SLASH, ent, tr.HitPos, decalNormal, color_white, 1, 1)
+		util.Effect("Impact_GMOD", data, true, filter)
 	end
-	util.Effect("Impact_GMOD", data, not game.SinglePlayer(), filter)
 end
 
 function SWEP:WeaponIdle()

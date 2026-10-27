@@ -294,7 +294,7 @@ function SWEP:WeaponIdle(tbl)
 		if self:Clip1() == 0 and selfTable.GetReloadState(self) == 0 and owner:GetAmmoCount(self:GetPrimaryAmmoType()) > 0 then
 			selfTable.Reload(self)
 		elseif selfTable.GetReloadState(self) ~= 0 then
-			if self:Clip1() ~= 8 and owner:GetAmmoCount(self:GetPrimaryAmmoType()) > 0 then
+			if self:Clip1() < 8 and owner:GetAmmoCount(self:GetPrimaryAmmoType()) > 0 then
 				selfTable.Reload(self)
 			else
 				selfTable.SetWeaponAnim(self, ACT_SHOTGUN_RELOAD_FINISH)

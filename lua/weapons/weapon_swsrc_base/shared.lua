@@ -236,6 +236,8 @@ function SWEP:Reload()
 	local owner = selfTable.GetPlayerOwner(self)
 	if not owner then return false end
 
+	owner:SetAnimation(PLAYER_RELOAD)
+
 	selfTable.SetShotsFired(self, 0)
 
 	local ok, duration = selfTable.SetWeaponAnim(self, ACT_VM_RELOAD)

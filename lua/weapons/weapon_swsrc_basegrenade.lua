@@ -99,6 +99,8 @@ function SWEP:Reload()
 		self:SetNextPrimaryFire(duration)
 		self:SetNextSecondaryFire(duration)
 
+		selfTable.SetRedraw(self, false)
+
 		selfTable.SetWeaponIdleTime(self, duration)
 	end
 
@@ -132,7 +134,7 @@ function SWEP:ProcessActivities(tbl)
 	local m_fThrowTime = selfTable.GetThrowTime(self)
 	local m_bRedraw = selfTable.GetRedraw(self)
 
-	if selfTable.GetPinPulled() and bit.band(btns, IN_ATTACK) == 0 then
+	if selfTable.GetPinPulled(self) and bit.band(btns, IN_ATTACK) == 0 then
 		owner:DoCustomAnimEvent(PLAYERANIMEVENT_ATTACK_GRENADE, 0)
 
 		selfTable.StartGrenadeThrow(self, selfTable)
@@ -151,9 +153,13 @@ function SWEP:ProcessActivities(tbl)
 		selfTable.ThrowGrenade(self, selfTable)
 	elseif m_bRedraw then
 		if selfTable.GetWeaponIdleTime(self) < CurTime() then
-			if SERVER and owner:GetAmmoCount(self:GetPrimaryAmmoType()) <= 0 then
-				owner:DropWeapon(self)
-				SafeRemoveEntity(self)
+			if owner:GetAmmoCount(self:GetPrimaryAmmoType()) <= 0 then
+				if SERVER then
+					owner:DropWeapon(self)
+					SafeRemoveEntity(self)
+				end
+			else
+				selfTable.Reload(self)
 			end
 
 			return
@@ -200,7 +206,7 @@ function SWEP:ThrowGrenade(tbl)
 
 		swsrc.AngleVectors(angThrow, vForward, vRight, vUp)
 
-		local vecSrc = player:EyePos()
+		local vecSrc = owner:EyePos()
 
 		local trace = util.TraceHull({
 			start = vecSrc,
@@ -211,14 +217,21 @@ function SWEP:ThrowGrenade(tbl)
 			collisiongroup = COLLISION_GROUP_NONE,
 			filter = {owner},
 		})
-		vecSrc = trace.HitPos
+		vecSrc:Set(trace.HitPos)
 
 		local vecThrow = vForward * flVel + owner:GetVelocity()
 
+		local angularImpulse = Angle(600, math.floor(util.SharedRandom("SWSrc:ThrowGrenade Impulse", -1200, 1200)), 0)
+
 		local hProjectile = selfTable.EmitGrenade(self, selfTable)
 		if hProjectile:IsValid() then
-			hProjectile:Create(vecSrc, ANG_ZERO, vecThrow,
-				Vector(600, math.floor(util.SharedRandom("SWSrc:ThrowGrenade Impulse", -1200, 1200)), 0))
+			hProjectile:SetOwner(owner)
+			hProjectile:SetPos(vecSrc)
+			hProjectile:SetAngles(angThrow)
+			hProjectile:SetVelocity(vecThrow)
+			hProjectile:SetLocalAngularVelocity(angularImpulse)
+			--hProjectile:Create(vecSrc, ANG_ZERO, vecThrow, angularImpulse)
+			hProjectile:Spawn()
 
 			hook.Run("PlayerThrowSWSrcGrenade", owner, hProjectile, false)
 
@@ -243,15 +256,23 @@ function SWEP:DropGrenade(tbl)
 		if not owner then return end
 
 		local vForward = Vector()
-		swsrc.AngleVectors(owner:EyeAngles(), vForward)
+		local angles = owner:EyeAngles()
+		swsrc.AngleVectors(angles, vForward)
 		local vecSrc = owner:EyePos() + vForward * 16
 
 		local vecVel = owner:GetVelocity()
 
+		local angularImpulse = Angle(600, math.floor(util.SharedRandom("SWSrc:DropGrenade Impulse", -1200, 1200)), 0)
+
 		local hProjectile = selfTable.EmitGrenade(self, selfTable)
 		if hProjectile:IsValid() then
-			hProjectile:Create(vecSrc, ANG_ZERO, vecVel,
-				Vector(600, math.floor(util.SharedRandom("SWSrc:DropGrenade Impulse", -1200, 1200)), 0))
+			hProjectile:SetOwner(owner)
+			hProjectile:SetPos(vecSrc)
+			hProjectile:SetAngles(angles)
+			hProjectile:SetVelocity(vecVel)
+			hProjectile:SetLocalAngularVelocity(angularImpulse)
+			--hProjectile:Create(vecSrc, ANG_ZERO, vecVel, angularImpulse)
+			hProjectile:Spawn()
 
 			hook.Run("PlayerThrowSWSrcGrenade", owner, hProjectile, true)
 

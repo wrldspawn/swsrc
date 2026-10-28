@@ -31,6 +31,70 @@ function swsrc.AngleVectors(angles, forward, right, up)
 	end
 end
 
+function swsrc.IsPushableEntity(pEnt)
+	if not IsValid(pEnt) then return false end
+
+	if pEnt:GetCollisionGroup() == COLLISION_GROUP_NONE then
+		local class = pEnt:GetClass()
+		if class == "prop_physics" or class == "prop_physics_multiplayer" then
+			return true
+		end
+	end
+
+	return false
+end
+function swsrc.IsBreakableEntity(pEnt)
+	if not IsValid(pEnt) then return false end
+
+	if pEnt:GetInternalVariable("m_takedamage") ~= 2 then -- DAMAGE_YES
+		return false
+	end
+
+	local cgroup = pEnt:GetCollisionGroup()
+	if cgroup ~= COLLISION_GROUP_PUSHAWAY and cgroup ~= COLLISION_GROUP_BREAKABLE_GLASS and cgroup ~= COLLISION_GROUP_NONE then
+		return false
+	end
+
+	if pEnt:Health() > 200 then return false end
+
+	local class = pEnt:GetClass()
+	local phys = pEnt:GetPhysicsObject()
+	if class == "func_breakable_surf" then
+		if pEnt:GetInternalVariable("m_bIsBroken") then return false end
+	elseif phys:IsValid() and bit.band(phys:GetContents(), CONTENTS_PLAYERCLIP) ~= 0 then
+		return false
+	end
+
+	local m_iMinHealthDmg = pEnt:GetInternalVariable("m_iMinHealthDmg")
+	if m_iMinHealthDmg ~= nil and m_iMinHealthDmg >= 50 then return false end
+
+	return true
+end
+function swsrc.IsPushAwayEntity(pEnt)
+	if not IsValid(pEnt) then return false end
+
+	if pEnt:GetCollisionGroup() ~= COLLISION_GROUP_PUSHAWAY then
+		if SERVER then
+			local class = pEnt:GetClass()
+			if class == "func_door_rotating" then
+				local m_toggle_state = pEnt:GetInternalVariable("m_toggle_state")
+				if m_toggle_state ~= 2 and m_toggle_state ~= 3 then -- TS_GOING_UP, TS_GOING_DOWN
+					return false
+				end
+			elseif class == "prop_door_rotating" then
+				local m_eDoorState = pEnt:GetInternalVariable("m_eDoorState")
+				if m_eDoorState ~= 1 and m_eDoorState ~= 3 then -- DOOR_STATE_OPENING, DOOR_STATE_CLOSING
+					return false
+				end
+			end
+		else
+			return false
+		end
+	end
+
+	return true
+end
+
 -- these are only here for custom weapons to replicate logic of other "base" weapons
 WEAPON_NONE = 0
 WEAPON_P228 = 1

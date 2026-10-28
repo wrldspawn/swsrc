@@ -502,6 +502,9 @@ function SWEP:Holster()
 		owner:SetFOV(0, 0.01)
 	end
 
+	selfTable.SetInReload(self, false)
+	selfTable.SetReloadFinishTime(self, 0)
+
 	return true
 end
 
@@ -515,6 +518,9 @@ function SWEP:Deploy()
 	self:SetDeploySpeed(1) -- FIXME: cvar
 
 	selfTable.SetDecreaseShotsFired(self, CurTime())
+
+	selfTable.SetInReload(self, false)
+	selfTable.SetReloadFinishTime(self, 0)
 
 	selfTable.SetShotsFired(self, 0)
 	selfTable.SetResumeZoom(self, false)

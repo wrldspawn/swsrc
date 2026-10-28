@@ -11,7 +11,6 @@ SWEP.Spawnable = true
 SWEP.HoldType = "grenade"
 SWEP.WorldModel = "models/weapons/w_eq_fraggrenade.mdl"
 SWEP.ViewModel = "models/weapons/cstrike/c_eq_fraggrenade.mdl"
-SWEP.IconOverride = "vgui/gfx/vgui/fav_weap/hegrenade"
 
 --SWEP.Primary.DefaultClip = 5
 --SWEP.Primary.ClipSize = -1

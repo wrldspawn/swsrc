@@ -11,10 +11,9 @@ SWEP.Spawnable = true
 SWEP.HoldType = "grenade"
 SWEP.WorldModel = "models/weapons/w_eq_smokegrenade.mdl"
 SWEP.ViewModel = "models/weapons/cstrike/c_eq_smokegrenade.mdl"
-SWEP.IconOverride = "vgui/gfx/vgui/fav_weap/smokegrenade"
 
-SWEP.Primary.DefaultClip = 5
-SWEP.Primary.ClipSize = -1
+--SWEP.Primary.DefaultClip = 5
+--SWEP.Primary.ClipSize = -1
 
 SWEP.WeaponData = [=[WeaponData
 {

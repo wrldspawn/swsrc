@@ -8,7 +8,7 @@ SWEP.SubCategory = "#spawnmenu.category.other"
 
 SWEP.PrintName = "C4"
 SWEP.Spawnable = true
-SWEP.HoldType = "knife"
+SWEP.HoldType = "slam"
 SWEP.WorldModel = "models/weapons/w_c4.mdl"
 SWEP.ViewModel = "models/weapons/cstrike/c_c4.mdl"
 SWEP.IconOverride = "vgui/achievements/win_bomb_plant"
@@ -163,7 +163,7 @@ function SWEP:ProcessActivities(tbl)
 	if bit.band(btns, IN_ATTACK) ~= 0 then
 		selfTable.PrimaryAttack(self)
 	else
-		selfTable.WeapoonIdle(self, selfTable)
+		selfTable.WeaponIdle(self, selfTable)
 	end
 end
 
@@ -251,9 +251,9 @@ function SWEP:PrimaryAttack()
 			selfTable.AbortBombPlant(self)
 
 			if selfTable.GetBombPlacedAnimation(self) then -- this means the placement animation is canceled
-				selfTable.SetWeaponAnim(ACT_VM_DRAW)
+				selfTable.SetWeaponAnim(self, ACT_VM_DRAW)
 			else
-				selfTable.SetWeaponAnim(ACT_VM_IDLE)
+				selfTable.SetWeaponAnim(self, ACT_VM_IDLE)
 			end
 
 			return
@@ -268,18 +268,18 @@ function SWEP:PrimaryAttack()
 			elseif CurTime() >= self.GetArmedTime(self) - 0.75 and not selfTable.GetBombPlacedAnimation(self) then
 				-- call the c4 Placement animation
 				selfTable.SetBombPlacedAnimation(self, true)
-				selfTable.SetWeaponAnim(ACT_VM_SECONDARYATTACK)
+				selfTable.SetWeaponAnim(self, ACT_VM_SECONDARYATTACK)
 			end
 		end
 	end
 
 	if bArmingTimeSatisfied and selfTable.GetStartedArming(self) then
 		selfTable.SetStartedArming(self, false)
-		selfTable.SetArmedTime(0)
+		selfTable.SetArmedTime(self, 0)
 
 		--if m_bInBombZone then
 		if SERVER then
-			local pC4 = selfTable.ShootSatchelCharge(self)
+			local pC4 = selfTable.ShootSatchelCharge(self, selfTable)
 			if pC4:IsValid() then
 				-- SetBombSiteIndex
 
@@ -442,4 +442,31 @@ function SWEP:AbortBombPlant(tbl)
 	-- gameevent?
 
 	owner:DoCustomAnimEvent(PLAYERANIMEVENT_CANCEL, 0)
+end
+
+function SWEP:ShootSatchelCharge(tbl)
+	local selfTable = tbl or self:GetTable()
+
+	local owner = selfTable.GetPlayerOwner(self)
+	if not owner then return end
+
+	local vecStart = owner:GetPos()
+	local vecAngles = owner:GetAngles()
+
+	local pGrenade = ents.Create("swsrc_planted_c4")
+	if pGrenade and pGrenade:IsValid() then
+		vecAngles.x = 0
+		vecAngles.z = 0
+
+		pGrenade:SetOwner(owner)
+		pGrenade:SetPos(vecStart)
+		pGrenade:SetAnngles(vecAngles)
+		pGrenade:Spawn()
+		hook.Run("PlayerSpawnedSENT", owner, pGrenade)
+
+		return pGrenade
+	else
+		ErrorNoHalt("Can't create planted_c4 entity!\n")
+		return NULL
+	end
 end

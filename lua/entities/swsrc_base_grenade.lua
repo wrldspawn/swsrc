@@ -12,19 +12,19 @@ function ENT:GetGrenadeFriction() return 0.2 end
 function ENT:GetGrenadeElasticity() return 0.45 end
 
 function ENT:Initialize()
-    self:SetModel(self.Model)
+	self:SetModel(self.Model)
 
-    self:SetSolidFlags(FSOLID_NOT_STANDABLE)
-    self:SetMoveType(MOVETYPE_FLYGRAVITY)
-    self:SetMoveCollide(MOVECOLLIDE_FLY_CUSTOM)
-    self:SetSolid(SOLID_BBOX) -- So it will collide with physics props!
+	self:SetSolidFlags(FSOLID_NOT_STANDABLE)
+	self:SetMoveType(MOVETYPE_FLYGRAVITY)
+	self:SetMoveCollide(MOVECOLLIDE_FLY_CUSTOM)
+	self:SetSolid(SOLID_BBOX) -- So it will collide with physics props!
 
-    self:SetGravity(self:GetGrenadeGravity())
-    self:SetFriction(self:GetGrenadeFriction())
-    self:SetElasticity(self:GetGrenadeElasticity())
+	self:SetGravity(self:GetGrenadeGravity())
+	self:SetFriction(self:GetGrenadeFriction())
+	self:SetElasticity(self:GetGrenadeElasticity())
 
-    -- smaller, cube bounding box so we rest on the ground
-    self:SetCollisionBounds(Vector(-2,-2,-2), Vector(2,2,2))
+	-- smaller, cube bounding box so we rest on the ground
+	self:SetCollisionBounds(Vector(-2, -2, -2), Vector(2, 2, 2))
 end
 
 local STOP_EPSILON = 0.1
@@ -49,7 +49,7 @@ local function PhysicsClipVelocity(vin, normal, overbounce)
 		nZ = 0
 	end
 
-	return Vector(nX,nY,nZ)
+	return Vector(nX, nY, nZ)
 end
 
 local function IsBSPModel(pEnt, iSolid)
@@ -79,104 +79,104 @@ local function IsStandable(pEnt)
 end
 
 function ENT:ResolveCustomFlyCollision(trace, vel)
-    -- Assume all surfaces have the same elasticity
-    local surfaceElasticity = 1
+	-- Assume all surfaces have the same elasticity
+	local surfaceElasticity = 1
 
-    -- Don't bounce off of players with perfect elasticity
-    if trace.Entity:IsValid() and trace.Entity:IsPlayer() then
-        surfaceElasticity = 0.3
-    end
+	-- Don't bounce off of players with perfect elasticity
+	if trace.Entity:IsValid() and trace.Entity:IsPlayer() then
+		surfaceElasticity = 0.3
+	end
 
-    -- if its breakable glass and we kill it, don't bounce.
-    -- give some damage to the glass, and if it breaks, pass
-    -- through it.
-    local breakthrough = false
+	-- if its breakable glass and we kill it, don't bounce.
+	-- give some damage to the glass, and if it breaks, pass
+	-- through it.
+	local breakthrough = false
 
-    if trace.Entity:IsValid() then
-        local classname = trace.Entity:GetClass()
-        if classname == "func_breakable" or classname == "func_breakable_surf" then
-            breakthrough = true
-        end
-    end
+	if trace.Entity:IsValid() then
+		local classname = trace.Entity:GetClass()
+		if classname == "func_breakable" or classname == "func_breakable_surf" then
+			breakthrough = true
+		end
+	end
 
-    if breakthrough and SERVER then
-        local info = DamageInfo()
-        info:SetInflictor(self)
-        info:SetAttacker(self)
-        info:SetDamage(10)
-        info:SetDamageType(DMG_CLUB)
-        trace.Entity:TakeDamageInfo(info)
+	if breakthrough and SERVER then
+		local info = DamageInfo()
+		info:SetInflictor(self)
+		info:SetAttacker(self:GetOwner():IsValid() and self:GetOwner() or self)
+		info:SetDamage(10)
+		info:SetDamageType(DMG_CLUB)
+		trace.Entity:TakeDamageInfo(info)
 
-        if trace.Entity:Health() <= 0 then
-            -- slow our flight a little bit
-            local velocity = self:GetVelocity()
-            velocity:Mul(0.4)
-            self:SetLocalVelocity(velocity)
-            return
-        end
-    end
+		if trace.Entity:Health() <= 0 and bit.band(trace.Entity:GetSpawnFlags(), 1) == 0 then
+			-- slow our flight a little bit
+			local velocity = self:GetVelocity()
+			velocity:Mul(0.4)
+			self:SetLocalVelocity(velocity)
+			return
+		end
+	end
 
-    local totalElasticity = math.Clamp(self:GetElasticity() * surfaceElasticity, 0, 0.9)
+	local totalElasticity = math.Clamp(self:GetElasticity() * surfaceElasticity, 0, 0.9)
 
-    -- NOTE: A backoff of 2.0 is a reflection
-    local absVelocity = self:GetVelocity()
-    absVelocity = PhysicsClipVelocity(absVelocity, trace.HitNormal, 2.0)
-    absVelocity:Mul(totalElasticity)
+	-- NOTE: A backoff of 2.0 is a reflection
+	local absVelocity = self:GetVelocity()
+	absVelocity = PhysicsClipVelocity(absVelocity, trace.HitNormal, 2.0)
+	absVelocity:Mul(totalElasticity)
 
-    -- Get the total velocity (player + conveyors, etc.)
-    absVelocity:Add(self:GetBaseVelocity())
-    local flSpeedSqr = absVelocity:LengthSqr()
+	-- Get the total velocity (player + conveyors, etc.)
+	absVelocity:Add(self:GetBaseVelocity())
+	local flSpeedSqr = absVelocity:LengthSqr()
 
-    -- Stop if on ground.
-    if trace.HitNormal.z > 0.7 then -- Floor
-        -- Verify that we have an entity.
-        local entity = trace.Entity
+	-- Stop if on ground.
+	if trace.HitNormal.z > 0.7 then -- Floor
+		-- Verify that we have an entity.
+		local entity = trace.Entity
 
-        self:SetLocalVelocity(absVelocity)
+		self:SetLocalVelocity(absVelocity)
 
-        if flSpeedSqr < (30 * 30) then
-            if IsStandable(entity) then
-                self:SetGroundEntity(entity)
-            end
+		if flSpeedSqr < (30 * 30) then
+			if IsStandable(entity) then
+				self:SetGroundEntity(entity)
+			end
 
-            -- Reset velocities.
-            self:SetLocalVelocity(Vector())
-            self:SetLocalAngularVelocity(Angle())
+			-- Reset velocities.
+			self:SetLocalVelocity(Vector())
+			self:SetLocalAngularVelocity(Angle())
 
-            -- align to the ground so we're not standing on end
-            local angle = trace.HitNormal:Angle()
+			-- align to the ground so we're not standing on end
+			local angle = trace.HitNormal:Angle()
 
-            -- rotate randomly in yaw
-            angle.y = math.Rand(0, 360)
+			-- rotate randomly in yaw
+			angle.y = math.Rand(0, 360)
 
-            self:SetAngles(angle)
-        else
-            local baseVel = self:GetBaseVelocity()
-            local delta = baseVel - absVelocity
-            local baseDir = Vector(baseVel)
-            baseDir:Normalize()
-            local scale = delta:Dot(baseDir)
+			self:SetAngles(angle)
+		else
+			local baseVel = self:GetBaseVelocity()
+			local delta = baseVel - absVelocity
+			local baseDir = Vector(baseVel)
+			baseDir:Normalize()
+			local scale = delta:Dot(baseDir)
 
-            vel:Set(absVelocity)
-            vel:Mul((1 - trace.Fraction) * FrameTime())
-            --vel:Add(baseVel * (scale * (1 - trace.Fraction) * FrameTime()))
-            self:SetLocalVelocity(absVelocity)
-        end
-    else
-        -- If we get *too* slow, we'll stick without ever coming to rest because
-        -- we'll get pushed down by gravity faster than we can escape from the wall.
-        if flSpeedSqr < (30 * 30) then
-            -- Reset velocities.
-            self:SetLocalVelocity(Vector())
-            self:SetLocalAngularVelocity(Angle())
-        else
-            self:SetLocalVelocity(absVelocity)
-        end
-    end
+			vel:Set(absVelocity)
+			vel:Mul((1 - trace.Fraction) * FrameTime())
+			--vel:Add(baseVel * (scale * (1 - trace.Fraction) * FrameTime()))
+			self:SetLocalVelocity(absVelocity)
+		end
+	else
+		-- If we get *too* slow, we'll stick without ever coming to rest because
+		-- we'll get pushed down by gravity faster than we can escape from the wall.
+		if flSpeedSqr < (30 * 30) then
+			-- Reset velocities.
+			self:SetLocalVelocity(Vector())
+			self:SetLocalAngularVelocity(Angle())
+		else
+			self:SetLocalVelocity(absVelocity)
+		end
+	end
 
-    self:BounceSound()
+	self:BounceSound()
 end
 
 function ENT:BounceSound()
-    --print("tink")
+	--print("tink")
 end

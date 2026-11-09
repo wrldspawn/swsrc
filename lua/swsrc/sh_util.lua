@@ -415,17 +415,18 @@ function swsrc.RegisterWeapon(WeaponData, SWEP)
 
 	SWEP.Primary.Ammo = data.szAmmo1
 	SWEP.Primary.ClipSize = data.iMaxClip1
-	if data.iMaxClip1 == -1 then
-		SWEP.Primary.DefaultClip = -1
-	else
+	do
 		local clip = data.iDefaultClip1
 		if not clip or clip == 0 then
 			clip = data.iMaxClip1
 		end
 
-		local extra = game.GetAmmoMax(data.iAmmoType)
-		if not extra or extra == 0 or extra == 9999 then
-			extra = MAX_AMMO_BY_NAME[data.szAmmo1] or clip * 3
+		local extra = 0
+		if data.iMaxClip1 > 0 then
+			extra = game.GetAmmoMax(data.iAmmoType)
+			if not extra or extra == 0 or extra == 9999 then
+				extra = MAX_AMMO_BY_NAME[data.szAmmo1] or clip * 3
+			end
 		end
 
 		SWEP.Primary.DefaultClip = clip + extra
@@ -434,20 +435,21 @@ function swsrc.RegisterWeapon(WeaponData, SWEP)
 
 	SWEP.Secondary.Ammo = data.szAmmo2
 	SWEP.Secondary.ClipSize = data.iMaxClip2
-	if data.iMaxClip2 == -1 then
-		SWEP.Secondary.DefaultClip = -1
-	else
+	do
 		local clip = data.iDefaultClip2
 		if not clip or clip == 0 then
 			clip = data.iMaxClip2
 		end
 
-		local extra = game.GetAmmoMax(data.iAmmo2Type)
-		if not extra or extra == 0 or extra == 9999 then
-			extra = MAX_AMMO_BY_NAME[data.szAmmo2] or clip * 3
+		local extra = 0
+		if data.iMaxClip2 > 0 then
+			extra = game.GetAmmoMax(data.iAmmo2Type)
+			if not extra or extra == 0 or extra == 9999 then
+				extra = MAX_AMMO_BY_NAME[data.szAmmo2] or clip * 3
+			end
 		end
 
-		SWEP.Secondary.DefaultClip = clip + game.GetAmmoMax(data.iAmmo2Type)
+		SWEP.Secondary.DefaultClip = clip + extra
 	end
 	SWEP.Secondary.Automatic = data.m_bFullAuto
 

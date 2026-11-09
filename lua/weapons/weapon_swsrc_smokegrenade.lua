@@ -30,19 +30,19 @@ SWEP.WeaponData = [=[WeaponData
 	"MuzzleFlashStyle"		"CS_MUZZLEFLASH_NONE"
 	"CanEquipWithShield" 		"1"
 	"AddonModel"			"models/weapons/w_eq_smokegrenade_thrown.mdl"
-		
+
 	// Weapon characteristics:
 	"Penetration"			"0"
 	"Damage"			"50"
 	"Range"				"4096"
 	"RangeModifier"			"0.99"
 	"Bullets"			"1"
-	
+
 	// Weapon data is loaded by both the Game and Client DLLs.
 	"printname"			"#Cstrike_WPNHUD_Smoke_Grenade"
 	"viewmodel"			"models/weapons/v_eq_smokegrenade.mdl"
 	"playermodel"			"models/weapons/w_eq_smokegrenade.mdl"
-	
+
 	"anim_prefix"			"anim"
 	"bucket"			"3"
 	"bucket_position"		"3"
@@ -70,7 +70,7 @@ SWEP.WeaponData = [=[WeaponData
 				"character"	"p"
 		}
 		"weapon_s"
-		{	
+		{
 				"font"		"CSweapons"
 				"character"	"p"
 		}
@@ -119,14 +119,15 @@ SWEP.WeaponData = [=[WeaponData
 function SWEP:OverrideData(tbl)
 	-- TODO: cvar for cs:s slots?
 	tbl.Slot = 4
-    tbl.DefaultClip = 100
-    tbl.ClipSize = 100
+	tbl.DefaultClip = 100
+	tbl.ClipSize = 100
 end
 
 function SWEP:GetWeaponID()
-    return WEAPON_SMOKEGRENADE
+	return WEAPON_SMOKEGRENADE
 end
 
 function SWEP:EmitGrenade(tbl)
 	return ents.Create("swsrc_smokegrenade_projectile")
 end
+

@@ -37,18 +37,18 @@ SWEP.WeaponData = [=[WeaponData
 	"Range"				"4096"
 	"RangeModifier"			"0.99"
 	"Bullets"			"1"
-	
+
 	// Weapon data is loaded by both the Game and Client DLLs.
 	"printname"			"#Cstrike_WPNHUD_HE_Grenade"
 	"viewmodel"			"models/weapons/v_eq_fraggrenade.mdl"
 	"playermodel"			"models/weapons/w_eq_fraggrenade.mdl"
-	
+
 	"anim_prefix"			"anim"
 	"bucket"			"3"
 	"bucket_position"		"1"
 
 	"clip_size"			"-1"
-	"default_clip"			"5"
+	"default_clip"			"1"
 	"primary_ammo"			"swsrc_hegrenade"
 	"secondary_ammo"		"None"
 
@@ -70,7 +70,7 @@ SWEP.WeaponData = [=[WeaponData
 				"character"	"h" //"H"
 		}
 		"weapon_s"
-		{	
+		{
 				"font"		"CSweapons"
 				"character"	"h" //"H"
 		}
@@ -119,14 +119,15 @@ SWEP.WeaponData = [=[WeaponData
 function SWEP:OverrideData(tbl)
 	-- TODO: cvar for cs:s slots?
 	tbl.Slot = 4
-    tbl.DefaultClip = 100
-    tbl.ClipSize = 100
+	tbl.DefaultClip = 100
+	tbl.ClipSize = 100
 end
 
 function SWEP:GetWeaponID()
-    return WEAPON_HEGRENADE
+	return WEAPON_HEGRENADE
 end
 
 function SWEP:EmitGrenade(tbl)
 	return ents.Create("swsrc_hegrenade_projectile")
 end
+

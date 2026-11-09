@@ -30,19 +30,19 @@ SWEP.WeaponData = [=[WeaponData
 	"MuzzleFlashStyle"		"CS_MUZZLEFLASH_NONE"
 	"CanEquipWithShield" 		"1"
 	"AddonModel"			"models/weapons/w_eq_flashbang_thrown.mdl"
-	
+
 	// Weapon characteristics:
 	"Penetration"			"1"
 	"Damage"			"50"
 	"Range"				"4096"
 	"RangeModifier"			"0.99"
 	"Bullets"			"1"
-	
+
 	// Weapon data is loaded by both the Game and Client DLLs.
 	"printname"			"#Cstrike_WPNHUD_Flashbang"
 	"viewmodel"			"models/weapons/v_eq_flashbang.mdl"
 	"playermodel"			"models/weapons/w_eq_flashbang.mdl"
-	
+
 	"anim_prefix"			"anim"
 	"bucket"			"3"
 	"bucket_position"		"2"
@@ -69,7 +69,7 @@ SWEP.WeaponData = [=[WeaponData
 				"character"	"g"
 		}
 		"weapon_s"
-		{	
+		{
 				"font"		"CSweapons"
 				"character"	"g"
 		}
@@ -118,14 +118,15 @@ SWEP.WeaponData = [=[WeaponData
 function SWEP:OverrideData(tbl)
 	-- TODO: cvar for cs:s slots?
 	tbl.Slot = 4
-    tbl.DefaultClip = 100
-    tbl.ClipSize = 100
+	tbl.DefaultClip = 100
+	tbl.ClipSize = 100
 end
 
 function SWEP:GetWeaponID()
-    return WEAPON_FLASHBANG
+	return WEAPON_FLASHBANG
 end
 
 function SWEP:EmitGrenade(tbl)
 	return ents.Create("swsrc_flashbang_projectile")
 end
+

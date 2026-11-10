@@ -6,10 +6,58 @@ ENT.Spawnable = false
 
 ENT.Model = "models/weapons/w_eq_fraggrenade_thrown.mdl"
 
+ENT.m_flDetonateTimer = 0
+ENT.m_flDetonateTimerLength = 0
+AccessorFunc(ENT, "m_flDetonateTimer", "DetonateTimer", FORCE_NUMBER)
+AccessorFunc(ENT, "m_flDetonateTimerLength", "DetonateTimerLength", FORCE_NUMBER)
+
 -- Constants for all CS Grenades
 function ENT:GetGrenadeGravity() return 0.4 end
 function ENT:GetGrenadeFriction() return 0.2 end
 function ENT:GetGrenadeElasticity() return 0.45 end
+
+function ENT:SetupDataTables()
+    self:NetworkVar("Entity", "Thrower")
+end
+
+function ENT:Think()
+    if SERVER and not self:IsInWorld() then
+        self:Remove()
+        return
+    end
+
+    local curtime = CurTime()
+    local detonateTime = self:GetDetonateTimer()
+
+    if detonateTime > 0 and curtime > detonateTime then
+        self:Detonate()
+        return
+    end
+
+    if SERVER then
+        local velocity = self:GetVelocity()
+        sound.EmitHint(SOUND_DANGER, self:GetPos() + (velocity * 0.5), velocity:Length(), 0.2)
+    end
+
+    self:NextThink(curtime + 0.2)
+
+    if self:WaterLevel() ~= 0 then
+        self:SetLocalVelocity(self:GetVelocity() * 0.5)
+    end
+
+    return true
+end
+
+-- for override
+function ENT:BounceSound() end
+function ENT:Detonate() end
+
+function ENT:GetShakeAmplitude()
+    return 25
+end
+function ENT:GetShakeRadius()
+    return 750
+end
 
 function ENT:Initialize()
 	self:SetModel(self.Model)
@@ -23,8 +71,13 @@ function ENT:Initialize()
 	self:SetFriction(self:GetGrenadeFriction())
 	self:SetElasticity(self:GetGrenadeElasticity())
 
-	-- smaller, cube bounding box so we rest on the ground
-	self:SetCollisionBounds(Vector(-2, -2, -2), Vector(2, 2, 2))
+    -- smaller, cube bounding box so we rest on the ground
+    self:SetCollisionBounds(Vector(-2, -2, -2), Vector(2, 2, 2))
+
+    local timerlength = self:GetDetonateTimerLength()
+    if timerlength > 0 then
+        self:SetDetonateTimer(CurTime() + timerlength)
+    end
 end
 
 local STOP_EPSILON = 0.1
@@ -175,8 +228,4 @@ function ENT:ResolveCustomFlyCollision(trace, vel)
 	end
 
 	self:BounceSound()
-end
-
-function ENT:BounceSound()
-	--print("tink")
 end

@@ -330,7 +330,6 @@ end
 
 do -- view bob
 	local bob_enabled = GetConVar("swsrc_use_headbob")
-	-- shared with swcs lol cope
 	local cl_bobcycle = CreateConVar("swsrc_bobcycle", "0.8", FCVAR_ARCHIVE, "the frequency at which the viewmodel bobs.",
 		0.1,
 		2.0)

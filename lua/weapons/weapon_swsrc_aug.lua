@@ -8,7 +8,7 @@ SWEP.SubCategory = "#spawnmenu.category.swsrc_rifles"
 
 SWEP.PrintName = "AUG"
 SWEP.Spawnable = true
-SWEP.HoldType = "ar2"
+SWEP.HoldType = "smg"
 SWEP.WorldModel = "models/weapons/w_rif_aug.mdl"
 SWEP.ViewModel = "models/weapons/cstrike/c_rif_aug.mdl"
 

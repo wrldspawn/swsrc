@@ -8,7 +8,7 @@ SWEP.SubCategory = "#spawnmenu.category.swsrc_smgs"
 
 SWEP.PrintName = "MP5"
 SWEP.Spawnable = true
-SWEP.HoldType = "smg"
+SWEP.HoldType = "ar2"
 SWEP.WorldModel = "models/weapons/w_smg_mp5.mdl"
 SWEP.ViewModel = "models/weapons/cstrike/c_smg_mp5.mdl"
 

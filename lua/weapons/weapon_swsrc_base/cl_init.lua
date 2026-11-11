@@ -331,11 +331,11 @@ end
 do -- view bob
 	local bob_enabled = GetConVar("swsrc_use_headbob")
 	-- shared with swcs lol cope
-	local cl_bobcycle = CreateConVar("cl_bobcycle", "0.98", FCVAR_ARCHIVE, "the frequency at which the viewmodel bobs.",
+	local cl_bobcycle = CreateConVar("swsrc_bobcycle", "0.8", FCVAR_ARCHIVE, "the frequency at which the viewmodel bobs.",
 		0.1,
 		2.0)
-	local cl_bob = CreateConVar("cl_bob", "0.002")
-	local cl_bobup = CreateConVar("cl_bobup", "0.5")
+	local cl_bob = CreateConVar("swsrc_bob", "0.002")
+	local cl_bobup = CreateConVar("swsrc_bobup", "0.5")
 
 	function SWEP:CalcViewmodelBob()
 		local lateralBob, verticalBob = 0, 0
@@ -348,8 +348,9 @@ do -- view bob
 		local _bobcycle = cl_bobcycle:GetFloat()
 		if not owner or _bobcycle <= 0 or _bobup <= 0 or _bobup >= 1 then return lateralBob, verticalBob end
 
+		local curtime = CurTime()
 		local speed = owner:GetVelocity():Length2D()
-		local flmaxSpeedDelta = math.max(0, (CurTime() - lastbobtime) * 320)
+		local flmaxSpeedDelta = math.max(0, (curtime - lastbobtime) * 320)
 
 		speed = math.Clamp(speed, lastspeed - flmaxSpeedDelta, lastspeed + flmaxSpeedDelta)
 		speed = math.Clamp(speed, -320, 320)
@@ -358,8 +359,8 @@ do -- view bob
 
 		local bob_offset = math.Remap(speed, 0, 320, 0, 1)
 
-		bobtime = bobtime + (CurTime() - lastbobtime) * bob_offset
-		lastbobtime = CurTime()
+		bobtime = bobtime + (curtime - lastbobtime) * bob_offset
+		lastbobtime = curtime
 
 		--
 		cycle = lastbobtime - math.floor(bobtime / _bobcycle) * _bobcycle
@@ -377,7 +378,7 @@ do -- view bob
 		verticalBob = math.Clamp(verticalBob, -7, 4)
 
 		cycle = bobtime - math.floor(bobtime / _bobcycle * 2) * _bobcycle * 2
-		cycle = cycle / _bobcycle * 2
+		cycle = cycle / (_bobcycle * 2)
 
 		if cycle < _bobup then
 			cycle = math.pi * cycle / _bobup
@@ -430,12 +431,26 @@ do -- view bob
 		-- VectorMA(pos, lateralBob * 0.2, right, pos)
 	end
 
-	function SWEP:CalcViewModelView(vm, _, _, pos, ang)
+	SWEP.SwayScale = 1
+	SWEP.BobScale = 0
+
+	function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
+		local swayPosDiff = pos - oldpos
+		local swayAngDiff = ang - oldang
+
 		if bob_enabled:GetBool() then
-			self:AddViewmodelBob(vm, pos, ang)
+			self:AddViewmodelBob(vm, oldpos, oldang)
 		end
 
-		return pos, ang
+		oldang:Add(self:GetViewPunchAngle())
+		oldpos:Add(swayPosDiff)
+
+		return oldpos, oldang
+	end
+
+	function SWEP:CalcView(ply, pos, ang, fov)
+		ang:Add(self:GetViewPunchAngle())
+		return pos, ang, fov
 	end
 end
 
@@ -524,17 +539,5 @@ do -- weapon selection
 	function SWEP:DrawWeaponSelection(x, y, w, h, a)
 		self.SelectionColor.a = a
 		self:RenderTextureData("weapon_s", x, y, w, h, self.SelectionColor, true)
-	end
-end
-
-do -- CalcView
-	function SWEP:CalcView(ply, pos, ang, fov)
-		ang:Add(self:GetViewPunchAngle())
-		return pos, ang, fov
-	end
-
-	function SWEP:CalcViewModelView(vm, oldPos, oldAng, pos, ang)
-		ang:Add(self:GetViewPunchAngle())
-		return pos, ang
 	end
 end

@@ -153,11 +153,16 @@ function ENT:ResolveCustomFlyCollision(trace, vel)
 	end
 
 	if breakthrough and SERVER then
+        local thrower = self:GetOwner()
+        local throwerValid = thrower:IsValid()
+
 		local info = DamageInfo()
 		info:SetInflictor(self)
-		info:SetAttacker(self:GetOwner():IsValid() and self:GetOwner() or self)
+		info:SetAttacker(throwerValid and thrower or self)
 		info:SetDamage(10)
 		info:SetDamageType(DMG_CLUB)
+        info:SetDamagePosition(trace.HitPos)
+        info:SetReportedPosition(throwerValid and thrower:GetPos() or self:GetPos())
 		trace.Entity:TakeDamageInfo(info)
 
 		if trace.Entity:Health() <= 0 and bit.band(trace.Entity:GetSpawnFlags(), 1) == 0 then
